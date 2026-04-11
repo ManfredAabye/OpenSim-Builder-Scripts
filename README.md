@@ -8,7 +8,8 @@ Firestorm Viewer (Language):
 - fs1_build-software_installer.bat :: Build Script Phoenix-Firestorm 2026 Windows 11
 - fs2_firestorm_building_V48.bat :: Build Script Phoenix-Firestorm 2026 Windows 11
 - fs3_firestorm_Release.bat :: Build Script Phoenix-Firestorm 2026 Windows 11
-- fs4_refresh_check.bat :: Build Script Phoenix-Firestorm 2026 Windows 11- 
+- fs4_refresh_check.bat :: Build Script Phoenix-Firestorm 2026 Windows 11-
+- fsx_language.bat :: Language file
 
 Janus Gateway:
 - Janus-Build-WSL.sh :: Build Script Janus Gateway 2026 Windows 11

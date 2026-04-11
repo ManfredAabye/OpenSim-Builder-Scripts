@@ -23,23 +23,36 @@ set CYAN=%ESC%[36m
 set BRIGHT_CYAN=%ESC%[96m
 set RESET=%ESC%[0m
 
-set SKRIPT_VERSION="V47-20260319"
+:: Sprache ueber Datei fsx_language steuern (DE, EN, FR, ES)
+set "SCRIPT_DIR=%~dp0"
+set "LANG_FILE=%SCRIPT_DIR%fsx_language.bat"
+set "FS_LANG=DE"
+
+if not exist "%LANG_FILE%" (
+    echo %RED%[ERROR] Sprachdatei nicht gefunden: %LANG_FILE%%RESET%
+    pause
+    exit /b 1
+)
+
+call "%LANG_FILE%"
+
+set SKRIPT_VERSION="V52-20260411"
 
 :: Überschrift für die Build-Vorbereitung
-echo %GREEN% Firestorm Build Vorbereitung %SKRIPT_VERSION% %RESET%
+echo %GREEN%!FS2_TXT_HDR_PREP! %SKRIPT_VERSION% %RESET%
 echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: ##### 3. **Grundkonfiguration und Variablen**
 :: Definition von Skriptpfad, Zielordnern, Konfigurationsparametern
-echo %GREEN%Konfiguration...%RESET%
+echo %GREEN%!FS2_TXT_CONFIGURATION!%RESET%
 
 :: Kein link.exe von Github nutzen (Git überschreibt manchmal Windows-Tools)
 set "SCRIPT_DIR=%~dp0"  :: Pfad zu diesem Skript
 
 :: Stelle sicher, dass alle relativen Pfade auf dieses Skriptverzeichnis zeigen.
 cd /d "%SCRIPT_DIR%" || (
-    echo %RED%[FEHLER] Konnte nicht in das Skriptverzeichnis wechseln: %SCRIPT_DIR%%RESET%
+    echo %RED%!FS2_TXT_ERR_SCRIPT_DIR! %SCRIPT_DIR%%RESET%
     pause
     exit /b 1
 )
@@ -54,7 +67,7 @@ if "%CYGWIN_BASH%"=="" if exist "C:\tools\cygwin\bin\bash.exe" set "CYGWIN_BASH=
 if "%CYGWIN_BASH%"=="" if exist "%ProgramData%\chocolatey\lib\cygwin\tools\bin\bash.exe" set "CYGWIN_BASH=%ProgramData%\chocolatey\lib\cygwin\tools\bin\bash.exe"
 
 if "%CYGWIN_BASH%"=="" (
-    echo %RED%[FEHLER] Cygwin bash.exe nicht gefunden. Bitte zuerst 1_build-software_installer.bat ausfuehren.%RESET%
+    echo %RED%!FS2_TXT_ERR_CYGWIN_BASH!%RESET%
     pause
     exit /b 1
 )
@@ -81,7 +94,7 @@ set "AUTO_BUILD_CONFIG=%BUILD_DIR%\phoenix-firestorm\autobuild.xml"  :: Pfad zur
 set "AUTOBUILD_VARIABLES_FILE=%BUILD_DIR%\fs-build-variables\variables"  :: Build-Variablen
 
 :: ##### TEMP-UMLEITUNG #####
-echo %GREEN%TEMP-UMLEITUNG...%RESET%
+echo %GREEN%!FS2_TXT_TEMP_REDIRECT!%RESET%
 set "AUTOBUILD_TEMP=%SCRIPT_DIR%temp"  :: Temporäres Arbeitsverzeichnis
 if not exist "%AUTOBUILD_TEMP%" mkdir "%AUTOBUILD_TEMP%"
 :: Erstellt das TEMP-Verzeichnis, falls nicht vorhanden
@@ -97,7 +110,7 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 4. **Erstellung des Arbeitsverzeichnisses**
 :: #####    - Legt den Build-Ordner an (sofern nicht vorhanden)
-echo %GREEN%Erstelle Build-Verzeichnis%RESET%
+echo %GREEN%!FS2_TXT_CREATE_BUILD_DIR!%RESET%
 
 mkdir "%BUILD_DIR%" 2>nul
 
@@ -106,17 +119,17 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 5. **Einrichtung der Python-Virtualenv**
 :: #####    - Erstellt virtuelle Umgebung und installiert benötigte Python-Module (`autobuild`, `llbase`, `llsd`)
-echo %GREEN%[INFO] Erstelle virtuelle Umgebung...%RESET%
+echo %GREEN%!FS2_TXT_INFO_CREATE_VENV!%RESET%
 
 if not exist "%VENV_DIR%" (
     python -m venv "%VENV_DIR%"
     call "%VENV_DIR%\Scripts\activate.bat"
     python -m pip install --upgrade pip
     python -m pip install --force-reinstall --no-cache-dir llbase llsd autobuild
-    echo %GREEN%[INFO] Virtualenv wurde erstellt.%RESET%
+    echo %GREEN%!FS2_TXT_INFO_VENV_CREATED!%RESET%
 ) else (
     call "%VENV_DIR%\Scripts\activate.bat"
-    echo %GREEN%[INFO] Virtualenv existiert bereits.%RESET%
+    echo %GREEN%!FS2_TXT_INFO_VENV_EXISTS!%RESET%
 )
 
 @REM :: 1. fs_include ins Build-Verzeichnis kopieren
@@ -141,23 +154,23 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 6. **Klonen der Quellverzeichnisse**
 :: #####    - Holt `phoenix-firestorm` und `fs-build-variables` über `git clone`
-echo %GREEN%Klonen der Repositories direkt nach %BUILD_DIR%...%RESET%
+echo %GREEN%!FS2_TXT_CLONE_REPOS! %BUILD_DIR%...%RESET%
 
 :: 1. Phoenix-Firestorm direkt ins BUILD_DIR
 if not exist "%BUILD_DIR%\phoenix-firestorm\.git" (
     git clone "https://github.com/FirestormViewer/phoenix-firestorm.git" "%BUILD_DIR%\phoenix-firestorm"
 ) else (
-    echo %YELLOW%phoenix-firestorm existiert bereits. aktualisiere...%RESET%
+    echo %YELLOW%!FS2_TXT_PHOENIX_EXISTS!%RESET%
     git -C "%BUILD_DIR%\phoenix-firestorm" pull
-    echo %GREEN%[INFO] Phoenix-Firestorm wurde aktualisiert.%RESET%
+    echo %GREEN%!FS2_TXT_INFO_PHOENIX_UPDATED!%RESET%
 )
 :: 2. Build-Variablen direkt ins BUILD_DIR
 if not exist "%BUILD_DIR%\fs-build-variables\.git" (
     git clone "https://github.com/FirestormViewer/fs-build-variables.git" "%BUILD_DIR%\fs-build-variables"
 ) else (
-    echo %YELLOW%fs-build-variables existiert bereits. aktualisiere...%RESET%
+    echo %YELLOW%!FS2_TXT_VARS_EXISTS!%RESET%
     git -C "%BUILD_DIR%\fs-build-variables" pull
-    echo %GREEN%[INFO] fs-build-variables wurde aktualisiert.%RESET%
+    echo %GREEN%!FS2_TXT_INFO_VARS_UPDATED!%RESET%
 )
 
 
@@ -165,7 +178,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: Weitere Source schritte...
-echo %GREEN%Kopiere fs-build-variables...%RESET%
+echo %GREEN%!FS2_TXT_COPY_VARS!%RESET%
 
 if not exist "%BUILD_DIR%\fs-build-variables" (
     xcopy /E /I /Y "%SCRIPT_DIR%\fs-build-variables" "%BUILD_DIR%\fs-build-variables" >nul 2>&1
@@ -175,7 +188,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: Logos überschreiben aus dem fs_include Verzeichnis
-echo %GREEN%Logos ueberschreiben %BUILD_DIR%...%RESET%
+echo %GREEN%!FS2_TXT_OVERWRITE_LOGOS! %BUILD_DIR%...%RESET%
 
 xcopy /Y "%SCRIPT_DIR%fs_include\vivox_logo.png" "%BUILD_DIR%\phoenix-firestorm\indra\newview\skins\default\textures\3p_icons\"
 
@@ -183,7 +196,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: Skin änderungen Kopieren
-echo %GREEN%Skin Kopieren %BUILD_DIR%...%RESET%
+echo %GREEN%!FS2_TXT_COPY_SKIN! %BUILD_DIR%...%RESET%
 
 xcopy /E /I /Y "%SCRIPT_DIR%Skin\skins.xml" "%BUILD_DIR%\phoenix-firestorm\indra\newview\skins"
 xcopy /E /I /Y "%SCRIPT_DIR%Skin\singularity" "%BUILD_DIR%\phoenix-firestorm\indra\newview\skins\singularity"
@@ -192,7 +205,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: cmake änderungen Kopieren
-echo %GREEN%CMAKE Kopieren %BUILD_DIR%...%RESET%
+echo %GREEN%!FS2_TXT_COPY_CMAKE! %BUILD_DIR%...%RESET%
 
 xcopy /E /I /Y "%SCRIPT_DIR%fs_include\OPENAL.cmake" "%BUILD_DIR%\phoenix-firestorm\indra\cmake"
 xcopy /E /I /Y "%SCRIPT_DIR%fs_include\Assimp.cmake" "%BUILD_DIR%\phoenix-firestorm\indra\cmake"
@@ -201,7 +214,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: Include Dateien in den Sourcecode einfügen.
-echo %GREEN%Führe Dateikopierungen aus...%RESET%
+echo %GREEN%!FS2_TXT_FILE_COPYING!%RESET%
 
 :: 1. ZUERST das fs_include-Verzeichnis kopieren (falls noch nicht vorhanden)
 if not exist "%FS_INCLUDE_DEST%\" (
@@ -212,7 +225,7 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: 2. OpenAL DLLs kopieren (NACH Erstellung der Verzeichnisse)
-echo %GREEN%Kopiere OpenAL DLLs...%RESET%
+echo %GREEN%!FS2_TXT_COPY_OPENAL_DLL!%RESET%
 
 if exist "%BUILD_DIR%\phoenix-firestorm\build-vc170-64\newview\Release\" (
     :: OpenAL
@@ -229,7 +242,7 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 7. **Build-Variablen und Anforderungen installieren**
 :: #####    - Setzt Version, Architektur, lädt `requirements.txt`
-echo %GREEN%Anforderungen installieren...%RESET%
+echo %GREEN%!FS2_TXT_INSTALL_REQUIREMENTS!%RESET%
 
 set "AUTOBUILD_VSVER=170"
 python -m pip install -r "%BUILD_DIR%\phoenix-firestorm\requirements.txt"
@@ -251,7 +264,7 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 9. **Aktivierung der Visual-Studio-Umgebung**
 :: #####    - Lädt `vcvarsall.bat` für das 64-Bit-Toolset von Visual Studio 2022
-echo %GREEN%Aktivierung der Visual-Studio-Umgebung...%RESET%
+echo %GREEN%!FS2_TXT_ACTIVATE_VS!%RESET%
 
 set "VS2022BAT="
 for %%D in ("C:\Program Files\Microsoft Visual Studio\2022\Community") do (
@@ -261,7 +274,7 @@ for %%D in ("C:\Program Files\Microsoft Visual Studio\2022\Community") do (
 )
 
 if not defined VS2022BAT (
-    echo %RED%[FEHLER] Visual Studio 2022 Build Tools nicht gefunden!%RESET%
+    echo %RED%!FS2_TXT_ERR_VS_TOOLS_NOT_FOUND!%RESET%
     pause
     exit /b 1
 )
@@ -274,12 +287,12 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 10. **Aktivierung der Python-Umgebung**
 :: #####     - (Erneut) Aktiviert Virtualenv für Folgeaktionen
-echo %GREEN%Aktivierung der Python-Umgebung...%RESET%
+echo %GREEN%!FS2_TXT_ACTIVATE_PYTHON!%RESET%
 
 if exist "%VENV_DIR%\Scripts\activate.bat" (
     call "%VENV_DIR%\Scripts\activate.bat"
 ) else (
-    echo %RED%[FEHLER] Python-Virtualenv fehlt: %VENV_DIR%%RESET%
+    echo %RED%!FS2_TXT_ERR_PYTHON_VENV_MISSING! %VENV_DIR%%RESET%
     pause
     exit /b 1
 )
@@ -290,10 +303,10 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 11. **Prüfung der Build-Konfigurationsdatei**
 :: #####     - Validiert, ob `autobuild.xml` vorhanden ist
-echo %GREEN%Prüfung der Build-Konfigurationsdatei...%RESET%
+echo %GREEN%!FS2_TXT_CHECK_BUILD_CONFIG!%RESET%
 
 if not exist "%AUTO_BUILD_CONFIG%" (
-    echo %RED%[FEHLER] autobuild.xml fehlt!%RESET%
+    echo %RED%!FS2_TXT_ERR_AUTOBUILD_XML_MISSING!%RESET%
     pause
     exit /b 1
 )
@@ -304,10 +317,10 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 12. **Wechsel ins Quellverzeichnis**
 :: #####     - Setzt aktuelles Arbeitsverzeichnis auf `phoenix-firestorm`
-echo %GREEN%Wechsel ins Quellverzeichnis...%RESET%
+echo %GREEN%!FS2_TXT_SWITCH_SOURCE_DIR!%RESET%
 
 cd /d "%BUILD_DIR%\phoenix-firestorm" || (
-    echo %RED%[FEHLER] Quellverzeichnis nicht gefunden!%RESET%
+    echo %RED%!FS2_TXT_ERR_SOURCE_DIR_NOT_FOUND!%RESET%
     pause
     exit /b 1
 )
@@ -317,12 +330,12 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: ##### 14. **Einbau der 3p Bibliotheken**
-echo %GREEN%Installation einer neueren 3p-openal Bibliothek...%RESET%
+echo %GREEN%!FS2_TXT_INSTALL_NEW_OPENAL!%RESET%
 
 :: Entfernen von fmodstudio
 autobuild installables remove fmodstudio >nul 2>&1
 if errorlevel 1 (
-    echo %YELLOW%[INFO] fmodstudio nicht vorhanden, Entfernen wird uebersprungen.%RESET%
+    echo %YELLOW%!FS2_TXT_INFO_FMOD_NOT_PRESENT!%RESET%
 )
 
 autobuild installables edit openal platform=windows64 url=https://github.com/secondlife/3p-openal-soft/releases/download/v1.24.2-r1/openal-1.24.2-r1-windows64-13245988487.tar.zst hash_algorithm=sha1 hash=8ad24fba1191c9cb0d2ab36e64b04b4648a99f43
@@ -648,14 +661,14 @@ if not defined AUTOBUILD_ADDRSIZE (
 )
 
 :: Konfiguration mit AVX2
-echo %GREEN%Konfiguration mit AVX2 openal WebRTC...%RESET%
+echo %GREEN%!FS2_TXT_CONFIGURE_AVX2!%RESET%
 @REM echo  %YELLOW%Die  Warnung - Warning: no --id argument - ist überflüssig und verwirrend da das UTC Datum und Zeit eh gesetzt wird.%RESET%
 @REM autobuild configure --config-file "%AUTO_BUILD_CONFIG%" -A 64 -c ReleaseFS_open -- --avx2 --openal --package --chan WebRTC -DLL_TESTS:BOOL=FALSE -DFMOD:BOOL=OFF -DUSE_OPENAL=ON
 :: Ausgabe: PASSTHRU:  -DLL_TESTS:BOOL=FALSE -DFMOD:BOOL=OFF -DUSE_OPENAL=ON
 autobuild configure --config-file "%AUTO_BUILD_CONFIG%" -A 64 -c ReleaseFS_open -- --avx2 --openal --package --chan WebRTC
 
 if errorlevel 1 (
-    echo %RED%[FEHLER] Konfiguration fehlgeschlagen!%RESET%
+    echo %RED%!FS2_TXT_ERR_CONFIG_FAILED!%RESET%
     pause
     exit /b 1
 )
@@ -665,12 +678,12 @@ echo .
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo .
 :: ##### 16. Build
-echo %GREEN%Build mit den gesetzten AVX2 openal WebRTC...%RESET%
+echo %GREEN%!FS2_TXT_BUILD_AVX2!%RESET%
 :: Hier wird anscheinend OpenAL und weitere nicht implementiert obwohl sie in autobuild configure bereits implementiert wurden.
 autobuild build --config-file "%AUTO_BUILD_CONFIG%" -A 64 -c ReleaseFS_open --no-configure --verbose
 
 if errorlevel 1 (
-    echo %RED%[FEHLER] Build fehlgeschlagen!%RESET%
+    echo %RED%!FS2_TXT_ERR_BUILD_FAILED!%RESET%
     pause
     exit /b 1
 )
@@ -681,7 +694,7 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 17. Informationen exportieren
 :: #####     - Exportiert Manifest, Liste installierter Pakete, Install-URLs, Versions
-echo %GREEN%Exportiere Informationen...%RESET%
+echo %GREEN%!FS2_TXT_EXPORT_INFO!%RESET%
 :: Setze Zielverzeichnis
 set "TARGET_DIR=%SCRIPT_DIR%fs-informationen"
 if not exist "%TARGET_DIR%" (
@@ -699,11 +712,11 @@ set "COPYRIGHTS_FILE=%TARGET_DIR%\%SKRIPT_VERSION%_copyrights.txt"
 set "INSTALL_DIR=build"
 
 :: Manifest exportieren
-echo Exportiere Installationsmanifest...
+echo !FS2_TXT_EXPORT_MANIFEST!
 autobuild install --installed-manifest "%MANIFEST_FILE%" --install-dir "%INSTALL_DIR%"
 
 :: Liste installierter Pakete
-echo Liste installierter Pakete...
+echo !FS2_TXT_LIST_INSTALLED!
 autobuild install --list-installed > "%LIST_FILE%"
 
 :: Install-URLs
@@ -711,7 +724,7 @@ autobuild install --list-installed > "%LIST_FILE%"
 @REM autobuild install --list-install-urls > "%URL_FILE%"
 
 :: Versionsinformationen
-echo Versionsinformationen erfassen...
+echo !FS2_TXT_CAPTURE_VERSIONS!
 autobuild install --versions > "%VERSIONS_FILE%"
 
 :: Copyrights
@@ -719,7 +732,7 @@ autobuild install --versions > "%VERSIONS_FILE%"
 @REM autobuild install --copyrights > "%COPYRIGHTS_FILE%"
 
 echo.
-echo ✅ Alle Informationen wurden in "%TARGET_DIR%" gespeichert.
+echo !FS2_TXT_ALL_INFO_SAVED! "%TARGET_DIR%".
 
 
 echo .
@@ -727,67 +740,67 @@ echo %CYAN%───────────────────────
 echo .
 :: ##### 18. NSIS-Installer
 :: #####     - Führt `makensis.exe` mit der `.nsi`-Installerskriptdatei aus
-echo %GREEN%Erstelle mit NSIS-Installer...%RESET%
-echo DLLs werden in die Package kopiert.
+echo %GREEN%!FS2_TXT_CREATE_NSIS!%RESET%
+echo !FS2_TXT_DLLS_TO_PACKAGE!
 
 :: Definiere Zielverzeichnis für Release
 set "RELEASE_DIR=%BUILD_DIR%\phoenix-firestorm\build-vc170-64\newview\Release"
 
 :: Prüfe ob Release-Verzeichnis existiert
 if not exist "!RELEASE_DIR!" (
-    echo %YELLOW%[INFO] Release-Verzeichnis nicht gefunden: !RELEASE_DIR!%RESET%
-    echo %YELLOW%Versuche zu finden und zu erstellen...%RESET%
+    echo %YELLOW%!FS2_TXT_INFO_RELEASE_DIR_MISSING! !RELEASE_DIR!%RESET%
+    echo %YELLOW%!FS2_TXT_INFO_TRY_CREATE_RELEASE_DIR!%RESET%
     mkdir "!RELEASE_DIR!" 2>nul
 )
 
 :: Kopiere DLLs aus mehreren möglichen Quellen
-echo %GREEN%Kopiere DLLs in das Release-Verzeichnis...%RESET%
+echo %GREEN%!FS2_TXT_COPY_DLLS_RELEASE!%RESET%
 
 :: Quelle 1: aus fs_include (falls vorhanden)
 if exist "%SCRIPT_DIR%fs_include\alut.dll" (
     xcopy /Y "%SCRIPT_DIR%fs_include\alut.dll" "!RELEASE_DIR!\" >nul
-    echo %GREEN%[OK] alut.dll aus fs_include kopiert%RESET%
+    echo %GREEN%!FS2_TXT_OK_ALUT_FROM_INCLUDE!%RESET%
 )
 if exist "%SCRIPT_DIR%fs_include\OpenAL32.dll" (
     xcopy /Y "%SCRIPT_DIR%fs_include\OpenAL32.dll" "!RELEASE_DIR!\" >nul
-    echo %GREEN%[OK] OpenAL32.dll aus fs_include kopiert%RESET%
+    echo %GREEN%!FS2_TXT_OK_OPENAL_FROM_INCLUDE!%RESET%
 )
 
 :: Quelle 2: aus packages/lib/release (nach Autobuild install)
 if exist "%BUILD_DIR%\phoenix-firestorm\build-vc170-64\packages\lib\release\alut.dll" (
     xcopy /Y "%BUILD_DIR%\phoenix-firestorm\build-vc170-64\packages\lib\release\alut.dll" "!RELEASE_DIR!\" >nul
-    echo %GREEN%[OK] alut.dll aus packages kopiert%RESET%
+    echo %GREEN%!FS2_TXT_OK_ALUT_FROM_PACKAGES!%RESET%
 )
 if exist "%BUILD_DIR%\phoenix-firestorm\build-vc170-64\packages\lib\release\OpenAL32.dll" (
     xcopy /Y "%BUILD_DIR%\phoenix-firestorm\build-vc170-64\packages\lib\release\OpenAL32.dll" "!RELEASE_DIR!\" >nul
-    echo %GREEN%[OK] OpenAL32.dll aus packages kopiert%RESET%
+    echo %GREEN%!FS2_TXT_OK_OPENAL_FROM_PACKAGES!%RESET%
 )
 
 :: Führe Paketierung durch
 if exist "!RELEASE_DIR!" (
-    echo %GREEN%Starte autobuild package...%RESET%
+    echo %GREEN%!FS2_TXT_START_AUTOBUILD_PACKAGE!%RESET%
     set "PACKAGE_BUILD_DIR=%BUILD_DIR%\phoenix-firestorm\build-vc170-64"
     if exist "!PACKAGE_BUILD_DIR!" (
         autobuild package -A 64 -c ReleaseFS_open --build-dir "!PACKAGE_BUILD_DIR!" --config-file "%AUTO_BUILD_CONFIG%"
     ) else (
-        echo %YELLOW%[INFO] Build-Verzeichnis fuer Package nicht gefunden: !PACKAGE_BUILD_DIR!%RESET%
-        echo %YELLOW%[INFO] Ueberspringe autobuild package.%RESET%
+        echo %YELLOW%!FS2_TXT_INFO_PACKAGE_BUILD_DIR_MISSING! !PACKAGE_BUILD_DIR!%RESET%
+        echo %YELLOW%!FS2_TXT_INFO_SKIP_AUTOBUILD_PACKAGE!%RESET%
     )
     
     if errorlevel 1 (
-        echo %YELLOW%[INFO] autobuild package hatte einen Fehler, fortfahren...%RESET%
+        echo %YELLOW%!FS2_TXT_INFO_AUTOBUILD_PACKAGE_ERROR_CONTINUE!%RESET%
     )
 )
 
 :: Starte fs3_firestorm_Release.bat aus dem richtigen Verzeichnis
 if exist "%SCRIPT_DIR%fs3_firestorm_Release.bat" (
-    echo %GREEN%Starte fs3_firestorm_Release.bat aus aktuellem Verzeichnis...%RESET%
+    echo %GREEN%!FS2_TXT_START_FS3_CURRENT_DIR!%RESET%
     call "%SCRIPT_DIR%fs3_firestorm_Release.bat"
 ) else if exist "%SCRIPT_DIR%OpenSim-Builder-Scripts\fs3_firestorm_Release.bat" (
-    echo %GREEN%Starte fs3_firestorm_Release.bat aus OpenSim-Builder-Scripts...%RESET%
+    echo %GREEN%!FS2_TXT_START_FS3_OSB_DIR!%RESET%
     call "%SCRIPT_DIR%OpenSim-Builder-Scripts\fs3_firestorm_Release.bat"
 ) else (
-    echo %YELLOW%[WARNING] fs3_firestorm_Release.bat nicht gefunden. Skript beendet hier.%RESET%
+    echo %YELLOW%!FS2_TXT_WARN_FS3_NOT_FOUND!%RESET%
 )
 
 echo .

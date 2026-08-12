@@ -14,7 +14,7 @@ set CYAN=%ESC%[36m
 set BRIGHT_CYAN=%ESC%[96m
 set RESET=%ESC%[0m
 
-set SKRIPT_VERSION="V80-20260812"
+set SKRIPT_VERSION="V81-20260812"
 echo Skript Version: %SKRIPT_VERSION%
 
 echo %GREEN%=== Installation der Build-Tool ===%RESET%
@@ -108,7 +108,32 @@ echo %GREEN%3. Installiere Build-Tools%RESET%
 echo %GREEN%   - CMake, Git, Python, NSIS, Cygwin, 7zip, Graphviz, Doxygen%RESET%
 
 ::choco install -y --no-progress --stop-on-first-failure cmake git python nsis cygwin 7zip graphviz doxygen
-choco install -y --no-progress --stop-on-first-failure cmake git python nsis cygwin 7zip graphviz doxygen.install
+:: choco install -y --no-progress --stop-on-first-failure cmake git python nsis cygwin 7zip graphviz doxygen.install
+
+echo %GREEN%3. Installiere Build-Tools%RESET%
+echo %GREEN%   - CMake%RESET%
+choco install -y --no-progress cmake
+
+echo %GREEN%   - Git%RESET%
+choco install -y --no-progress git
+
+echo %GREEN%   - Python%RESET%
+choco install -y --no-progress python
+
+echo %GREEN%   - NSIS%RESET%
+choco install -y --no-progress nsis
+
+echo %GREEN%   - Cygwin%RESET%
+choco install -y --no-progress cygwin
+
+echo %GREEN%   - 7-Zip%RESET%
+choco install -y --no-progress 7zip
+
+echo %GREEN%   - Graphviz%RESET%
+choco install -y --no-progress graphviz
+
+echo %GREEN%   - Doxygen%RESET%
+choco install -y --no-progress doxygen.install
 
 :: Neu Testen, ob Python und Pip korrekt installiert sind
 python -m pip install --upgrade pip

@@ -110,30 +110,57 @@ echo %GREEN%   - CMake, Git, Python, NSIS, Cygwin, 7zip, Graphviz, Doxygen%RESET
 ::choco install -y --no-progress --stop-on-first-failure cmake git python nsis cygwin 7zip graphviz doxygen
 :: choco install -y --no-progress --stop-on-first-failure cmake git python nsis cygwin 7zip graphviz doxygen.install
 
-echo %GREEN%3. Installiere Build-Tools%RESET%
+@REM echo %GREEN%3. Installiere Build-Tools%RESET%
+@REM echo %GREEN%   - CMake%RESET%
+@REM choco install -y --no-progress cmake
+
+@REM echo %GREEN%   - Git%RESET%
+@REM choco install -y --no-progress git
+
+@REM echo %GREEN%   - Python%RESET%
+@REM choco install -y --no-progress python
+
+@REM echo %GREEN%   - NSIS%RESET%
+@REM choco install -y --no-progress nsis
+
+@REM echo %GREEN%   - Cygwin%RESET%
+@REM choco install -y --no-progress cygwin
+
+@REM echo %GREEN%   - 7-Zip%RESET%
+@REM choco install -y --no-progress 7zip
+
+@REM echo %GREEN%   - Graphviz%RESET%
+@REM choco install -y --no-progress graphviz
+
+@REM echo %GREEN%   - Doxygen%RESET%
+@REM choco install -y --no-progress doxygen.install
+
+echo %GREEN%3. Installiere/aktualisiere Build-Tools%RESET%
+
 echo %GREEN%   - CMake%RESET%
-choco install -y --no-progress cmake
+choco upgrade -y --no-progress cmake
 
 echo %GREEN%   - Git%RESET%
-choco install -y --no-progress git
+choco upgrade -y --no-progress git
 
 echo %GREEN%   - Python%RESET%
-choco install -y --no-progress python
+:: choco upgrade -y --no-progress python
+choco install python313 --version=3.13.3 --force -y --no-progress
 
 echo %GREEN%   - NSIS%RESET%
-choco install -y --no-progress nsis
+choco upgrade -y --no-progress nsis
 
 echo %GREEN%   - Cygwin%RESET%
-choco install -y --no-progress cygwin
+choco upgrade -y --no-progress cygwin
 
 echo %GREEN%   - 7-Zip%RESET%
-choco install -y --no-progress 7zip
+choco upgrade -y --no-progress 7zip
 
 echo %GREEN%   - Graphviz%RESET%
-choco install -y --no-progress graphviz
+choco upgrade -y --no-progress graphviz
 
 echo %GREEN%   - Doxygen%RESET%
-choco install -y --no-progress doxygen.install
+choco upgrade -y --no-progress doxygen.install
 
 :: Neu Testen, ob Python und Pip korrekt installiert sind
 python -m pip install --upgrade pip
@@ -210,5 +237,5 @@ if "%CYGWIN_SETUP%"=="" (
 
 echo %CYAN%──────────────────────────────────────────────────────────────────────────────────%RESET%
 echo %GREEN%=== Tool-Installation abgeschlossen ===%RESET%
-echo %GREEN%Führen Sie nun '2_firestorm_building_Vxx.bat' aus.%RESET%
+echo %GREEN%Führen Sie nun die building Batch-Datei aus%RESET%
 pause
